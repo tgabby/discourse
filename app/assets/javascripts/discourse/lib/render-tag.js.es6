@@ -3,7 +3,14 @@ export default function renderTag(tag, params) {
   tag = Handlebars.Utils.escapeExpression(tag);
   const classes = ['tag-' + tag, 'discourse-tag'];
   const tagName = params.tagName || "a";
-  const href = (tagName === "a" && !params.noHref) ? " href='" + Discourse.getURL("/tags/" + tag) + "' " : "";
+  let path;
+
+  if (tagName === "a" && !params.noHref) {
+    const current_user = Discourse.User.current();
+    path = params.isPrivateMessage && current_user ? `/u/${current_user.username}/messages/tag/` : "/tags/";
+  }
+
+  const href = path ? ` href="${Discourse.getURL(path + tag)}" ` : "";
 
   if (Discourse.SiteSettings.tag_style || params.style) {
     classes.push(params.style || Discourse.SiteSettings.tag_style);

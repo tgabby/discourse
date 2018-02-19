@@ -1567,6 +1567,9 @@ tags:
     type: list
     client: true
     default: ''
+  staff_tags_hidden:
+    type: list
+    default: ''
   suppress_overlapping_tags_in_list:
     default: false
     client: true

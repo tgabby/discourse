@@ -34,24 +34,24 @@ class TagsController < ::ApplicationController
       format.json do
         if SiteSetting.tags_listed_by_group
           grouped_tag_counts = TagGroup.allowed(guardian).order('name ASC').includes(:tags).map do |tag_group|
-            { id: tag_group.id, name: tag_group.name, tags: self.class.tag_counts_json(tag_group.tags) }
+            { id: tag_group.id, name: tag_group.name, tags: self.class.tag_counts_json(tag_group.tags.visible(guardian)) }
           end
 
-          ungrouped_tags = Tag.where("tags.id NOT IN (select tag_id from tag_group_memberships)")
+          ungrouped_tags = Tag.visible(guardian).where("tags.id NOT IN (select tag_id from tag_group_memberships)")
 
           render json: {
             tags: self.class.tag_counts_json(ungrouped_tags), # tags that don't belong to a group
             extras: { tag_groups: grouped_tag_counts }
           }
         else
-          unrestricted_tags = Tag.where("tags.id NOT IN (select tag_id from category_tags)")
+          unrestricted_tags = Tag.visible(guardian).where("tags.id NOT IN (select tag_id from category_tags)")
 
           categories = Category.where("id in (select category_id from category_tags)")
             .where("id in (?)", guardian.allowed_category_ids)
             .includes(:tags)
 
           category_tag_counts = categories.map do |c|
-            { id: c.id, tags: self.class.tag_counts_json(c.tags) }
+            { id: c.id, tags: self.class.tag_counts_json(c.tags.visible(guardian)) }
           end
 
           render json: {

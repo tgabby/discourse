@@ -7,7 +7,8 @@ module DiscourseTagging
     if SiteSetting.tagging_enabled
       tag_names = DiscourseTagging.tags_for_saving(tag_names_arg, guardian) || []
 
-      old_tag_names = topic.tags.map(&:name) || []
+      old_tag_names = topic.tags.pluck(:name) || []
+      tag_names += old_tag_names & Tag.hidden_tag_names(guardian.user)
       new_tag_names = tag_names - old_tag_names
       removed_tag_names = old_tag_names - tag_names
 
